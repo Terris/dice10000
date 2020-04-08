@@ -1,0 +1,88 @@
+/* Reset
+------------------------------------ */
+
+*,
+*:before,
+*:after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+html,
+input,
+textarea {
+  -webkit-font-smoothing: antialiased;
+  font-size: 100%;
+}
+body {
+  margin: 0;
+  text-rendering: optimizeLegibility;
+  background: #444;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+img {
+  width: 100%;
+}
+svg {
+  max-height: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+ul,
+ol,
+figure {
+  padding: 1rem 20px;
+}
+
+ul,
+ol {
+  padding-left: 2.25rem;
+}
+nav ul,
+nav ol {
+  padding-left: 0;
+}
+
+a,
+button {
+  color: #8bc9ef;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a:hover,
+button:hover {
+  color: #efb42b;
+}
+
+button {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  outline: none;
+}
+
+button.btn,
+a.btn {
+  background: #8bc9ef;
+  color: #444;
+  display: inline-block;
+  padding: 10px 20px;
+}
+button.btn:hover,
+a.btn:hover {
+  background: #efb42b;
+}
+
+button.btn:active,
+a.btn:active {
+  box-shadow: inset -2px -2px 5px 0px rgba(0, 0, 0, 0.36);
+}
