@@ -26,18 +26,15 @@ const mapHand = (values) => {
 };
 
 const calculateRollScore = (state) => {
-  let score = 0;
   const values = getKeptDice(state).map((die) => die.value);
   const handMap = mapHand(values);
   const handMapValues = Object.values(handMap);
   // if straight || pairs
-  if (
-    handMapValues.length === 6 ||
-    (handMapValues.length === 3 && handMapValues.every((val) => val === 2))
-  ) {
+  if (hasStraightOrPairs(handMapValues)) {
     return 1500;
   }
   // score for triples, 1s& 5s
+  let score = 0;
   for (let dieKey in handMap) {
     const dieKeyInt = parseInt(dieKey);
     // if triple or better
@@ -74,12 +71,75 @@ const resetDice = (state) => {
   });
 };
 
+const hasStraightOrPairs = (values) => {
+  return (
+    values.length === 6 ||
+    (values.length === 3 && values.every((val) => val === 2)) ||
+    (values.length === 2 && values.some((val) => val === 4))
+  );
+};
+
+const hasScoringSingleton = (values) =>
+  values.some((key) => key === 1 || key === 5);
+
+const rollHasHand = (state) => {
+  const availableDice = state.dice.filter((die) => !die.locked);
+  const values = availableDice.map((die) => die.value);
+  const handMap = mapHand(values);
+  const handMapValues = Object.values(handMap);
+  // if straight || pairs || contains 1 or 2
+  if (hasStraightOrPairs(handMapValues) || hasScoringSingleton(values)) {
+    return true;
+  }
+  return false;
+};
+
+const endTurn = (state) => {
+  // resetDice
+  resetDice(state);
+  // reset all turn scores
+  resetAllScores(state);
+  // set turnStart to true
+  state.turnStart = true;
+  // set turnPlayerId to next player
+  const lastPlayerIndex = state.players.findIndex(
+    (player) => player.id === state.playerTurnId
+  );
+  // if the last player is last in players collection
+  if (lastPlayerIndex === state.players.length - 1) {
+    state.playerTurnId = 0;
+  } else {
+    state.playerTurnId = state.players[lastPlayerIndex + 1].id;
+  }
+};
+
+const validateKeepable = (state, die) => {
+  const values = state.dice.map((d) => d.value);
+  let handMap = mapHand(values);
+  // if this die value is part of a straight, pair, triples, or is a 1 or a 5
+  return (
+    handMap[die.value] >= 3 ||
+    hasStraightOrPairs(Object.values(handMap)) ||
+    die.value === 1 ||
+    die.value === 5
+  );
+};
+
 // SET STATE
 // --------------------------------
 
 const rollDice = (state) => {
-  // if all six dice are kept
+  // validate it's not the first roll or at least one kept die
   const keptOrLockedDice = state.dice.filter((die) => die.locked || die.keep);
+  if (!state.turnStart && keptOrLockedDice.length === 0) {
+    return { ...state };
+  }
+  // if first roll of turn, toggle false
+  if (state.turnStart) {
+    state.turnStart = false;
+  }
+
+  // if all six dice are kept or locked
   if (keptOrLockedDice.length === 6) {
     // set turnScore, reset sweepScore
     state.turnScore = calculateTurnScore(state);
@@ -100,26 +160,40 @@ const rollDice = (state) => {
       die.locked = true;
     }
   });
+  // check for hands
+  if (!rollHasHand(state)) {
+    endTurn(state);
+  }
   return { ...state };
 };
 
 const toggleKeep = (state, action) => {
   const dieIndex = getDieIndex(state, action);
+  const die = state.dice[dieIndex];
   // toggle keep value if not locked
-  if (!state.dice[dieIndex].locked) {
-    state.dice[dieIndex].keep = state.dice[dieIndex].keep ? false : true;
+  if (!die.locked) {
+    if (!die.keep) {
+      // validate keepable
+      console.log(validateKeepable(state, die));
+      if (validateKeepable(state, die)) {
+        die.keep = true;
+      } else {
+        return { ...state };
+      }
+    } else {
+      die.keep = false;
+    }
     // set rollScore
     state.rollScore = calculateRollScore(state);
   }
   return { ...state };
 };
 
-const recordScore = (state, action) => {
+const stay = (state, action) => {
   // update player score
   state.players[getPlayerIndex(state)].score =
     calculateTurnScore(state) + getPlayerScore(state);
-  resetAllScores(state);
-  resetDice(state);
+  endTurn(state);
   return { ...state };
 };
 
@@ -132,7 +206,7 @@ export default (state, action) => {
     case "KEEP_DIE":
       return toggleKeep(state, action);
     case "STAY":
-      return recordScore(state, action);
+      return stay(state, action);
     case "RESET":
       return init(action.payload);
     default:

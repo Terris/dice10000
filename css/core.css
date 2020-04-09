@@ -86,3 +86,9 @@ button.btn:active,
 a.btn:active {
   box-shadow: inset -2px -2px 5px 0px rgba(0, 0, 0, 0.36);
 }
+button.btn:disabled,
+a.btn:disabled {
+  opacity: 0.15;
+  cursor: not-allowed;
+  background: grey;
+}

@@ -10,15 +10,21 @@ const initialState = {
       name: "Player 1",
       score: 0,
     },
+    {
+      id: 1,
+      name: "Player 2",
+      score: 0,
+    },
   ],
   dice: [
-    { id: 1, value: 2, keep: false, locked: false },
+    { id: 1, value: 1, keep: false, locked: false },
     { id: 2, value: 2, keep: false, locked: false },
-    { id: 3, value: 4, keep: false, locked: false },
+    { id: 3, value: 3, keep: false, locked: false },
     { id: 4, value: 4, keep: false, locked: false },
-    { id: 5, value: 6, keep: false, locked: false },
+    { id: 5, value: 5, keep: false, locked: false },
     { id: 6, value: 6, keep: false, locked: false },
   ],
+  turnStart: true,
   playerTurnId: 0,
   turnScore: 0,
   sweepScore: 0,
@@ -29,8 +35,8 @@ export const GameContext = createContext(initialState);
 
 export const GameProvider = ({ children }) => {
   const [state, dispatch] = useReducer(GameReducer, initialState);
-  // Actions
 
+  // Actions
   function keepDie(dieId) {
     dispatch({
       type: "KEEP_DIE",
